@@ -1,0 +1,42 @@
+exp 5
+import random
+import matplotlib.pyplot as plt
+
+def f(x):
+    return -x**2 + 6*x + 9
+
+def ga(generations=50, pop_size=100, low=-10, high=10):
+    pop = [random.uniform(low, high) for _ in range(pop_size)]
+    best_fit = []
+
+    for g in range(generations):
+        fitness = [f(x) for x in pop]
+        total = sum(fitness)
+        probs = [fit / total for fit in fitness]
+        new_pop = []
+
+        for _ in range(pop_size // 2):
+            p1, p2 = random.choices(pop, weights=probs, k=2)
+            if random.random() < 0.7:
+                c1 = c2 = (p1 + p2) / 2
+            else:
+                c1, c2 = p1, p2
+            if random.random() < 0.01: c1 += random.uniform(-1, 1)
+            if random.random() < 0.01: c2 += random.uniform(-1, 1)
+            new_pop += [c1, c2]
+
+        pop = new_pop[:pop_size]
+        best = max(pop, key=f)
+        best_fit.append(f(best))
+        print(f"Gen {g+1}: Best x = {round(best,4)}, Fitness = {round(f(best),4)}")
+
+    return best, best_fit
+
+best, history = ga()
+print(f"\nBest Solution: x = {round(best,4)}, Fitness = {round(f(best),4)}")
+plt.plot(history, marker='o')
+plt.title("Genetic Algorithm Optimization")
+plt.xlabel("Generation")
+plt.ylabel("Best Fitness")
+plt.grid(True)
+plt.show()
