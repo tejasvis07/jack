@@ -1,0 +1,28 @@
+exp 4
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+data = np.random.rand(100, 2)
+grid = (10, 10)
+lr, epochs = 0.2, 100
+W = np.random.rand(*grid, 2)
+
+for e in range(epochs):
+    for v in data:
+        d = np.linalg.norm(W - v, axis=-1)
+        bmu = np.unravel_index(np.argmin(d), d.shape)
+        for i in range(grid[0]):
+            for j in range(grid[1]):
+                dist = np.linalg.norm([i - bmu[0], j - bmu[1]])
+                influence = np.exp(-dist**2 / (2 * (e + 1)**2))
+                W[i, j] += influence * lr * (v - W[i, j])
+
+cluster_map = np.array([[np.argmin(np.linalg.norm(data - W[i, j], axis=1))
+                         for j in range(grid[1])] for i in range(grid[0])])
+
+plt.figure(figsize=(6, 6))
+plt.pcolormesh(cluster_map, cmap='viridis', shading='auto')
+plt.scatter(data[:, 0]*grid[0], data[:, 1]*grid[1], c='red', s=12)
+plt.title('Self-Organizing Map')
+plt.show()
