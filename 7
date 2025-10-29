@@ -1,0 +1,38 @@
+exp 7
+import random, math
+
+def f(x, y, z):
+    return -(x**2 + y**2 + z**2) + 10*(math.cos(2*math.pi*x) + math.cos(2*math.pi*y) + math.cos(2*math.pi*z))
+
+def init_pop(n, lb, ub):
+    return [(random.uniform(lb, ub), random.uniform(lb, ub), random.uniform(lb, ub)) for _ in range(n)]
+
+def select(pop):
+    fit = [f(*ind) for ind in pop]   # unpack tuple here
+    total = sum(fit)
+    return random.choices(pop, weights=[v/total for v in fit], k=2)
+
+def cross(p1, p2, p=0.7):
+    if random.random() < p:
+        a, b = random.random(), random.random()
+        return tuple(a*p1[i] + (1-a)*p2[i] for i in range(3)), tuple(b*p1[i] + (1-b)*p2[i] for i in range(3))
+    return p1, p2
+
+def mutate(ind, p=0.01):
+    return tuple(x + random.uniform(-0.1,0.1) if random.random()<p else x for x in ind)
+
+def GA(gens, size, lb, ub):
+    pop = init_pop(size, lb, ub)
+    for g in range(gens):
+        new = []
+        while len(new) < size:
+            p1, p2 = select(pop)
+            c1, c2 = cross(p1, p2)
+            new += [mutate(c1), mutate(c2)]
+        pop = new[:size]
+        best = max(pop, key=lambda ind: f(*ind))   # unpack tuple here
+        print(f"Gen {g+1}: Best={best}, Fitness={round(f(*best),4)}")
+    return max(pop, key=lambda ind: f(*ind))       # unpack tuple here
+
+best = GA(50, 100, -1, 1)
+print(f"\nBest solution: {best}, Fitness={round(f(*best),4)}")
