@@ -1,0 +1,43 @@
+exp 6
+import random, math, matplotlib.pyplot as plt
+def f(x, y): 
+    return math.sin(x) + math.sin(y)
+
+def init_pop(n, lb, ub): 
+    return [(random.uniform(lb, ub), random.uniform(lb, ub)) for _ in range(n)]
+
+def select(pop): 
+    fit = [f(x, y) for x, y in pop]
+    total = sum(fit)
+    return random.choices(pop, weights=[v/total for v in fit], k=2)
+
+def cross(p1, p2): 
+    return (p1[0], p2[1]), (p2[0], p1[1])
+
+def mutate(ind, p=0.05): 
+    x, y = ind
+    if random.random() < p: x += random.uniform(-0.1, 0.1)
+    if random.random() < p: y += random.uniform(-0.1, 0.1)
+    return x, y
+
+def GA(gens, size, lb, ub):
+    pop = init_pop(size, lb, ub)
+    best_fit = []
+    for _ in range(gens):
+        new = []
+        while len(new) < size:
+            p1, p2 = select(pop)
+            c1, c2 = cross(p1, p2)
+            new += [mutate(c1), mutate(c2)]
+        pop = new[:size]
+        best = max(pop, key=lambda i: f(*i))
+        best_fit.append(f(*best))
+        print(f"Gen {_+1}: Best {best}, Fit={round(f(*best),4)}")
+    return best, best_fit
+gens, size = 50, 100
+best, hist = GA(gens, size, -2*math.pi, 2*math.pi)
+print(f"\nBest: {best}, Fitness={round(f(*best),4)}")
+
+plt.plot(hist, 'bo-')
+plt.title("GA on f(x,y)=sin(x)+sin(y)")
+plt.xlabel("Generation"); plt.ylabel("Best Fitness"); plt.grid(); plt.show()
